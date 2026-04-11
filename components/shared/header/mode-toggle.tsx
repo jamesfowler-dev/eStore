@@ -17,29 +17,28 @@ const ModeToggle = () => {
     const [ mounted, setMounted ] = useState(false); 
     const { theme, setTheme } = useTheme(); 
 
+    // useEffect hook different from tutorial to avoid errors. What this code does:
+    // Waits one animation frame before marking the component as mounted.
+    // Avoids the checker warning about synchronous setState in an effect.
+    // Keeps your SSR/hydration guard behavior (returns null until mounted). 
     useEffect(() => {
-        setMounted(true);   
+        const id = requestAnimationFrame(() => setMounted(true));
+        return () => cancelAnimationFrame(id);
     }, []);
 
     if (!mounted) {
         return null; 
     }
 
+
+    // Code for <DropdownMenuTrigger> differs from the tutorial due to button rendering inside 
+    // a button
     return ( 
     <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-            <Button 
-                variant="ghost" 
-                className="focus-visible:ring-0 focus-visible:ring-offset-0"
-            >
-                { theme === "system" ? (
-                    <SunMoon />
-                ) : theme === "dark" ? (
-                    <MoonIcon /> 
-                ) : (
-                    <SunIcon />
-                )}
-            </Button>
+        <DropdownMenuTrigger
+            className="focus-visible:ring-0 focus-visible:ring-offset-0"
+        >
+            {theme === "system" ? <SunMoon /> : theme === "dark" ? <MoonIcon /> : <SunIcon />}
         </DropdownMenuTrigger>
         <DropdownMenuContent>
         <DropdownMenuGroup>
