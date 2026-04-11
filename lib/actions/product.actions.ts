@@ -1,21 +1,22 @@
 "use server";
-// import "dotenv/config";
-// import { PrismaPg } from "@prisma/adapter-pg";
+
 import { prisma } from "@/db/prisma";
 import { convertToPlainObject } from "../utils";
 import { LATEST_PRODUCTS_LIMIT } from "../constants";
 
 // Get latest products
 export async function getLatestProducts() {
-    // const connectionString = process.env.DATABASE_URL;
-    // const adapter = new PrismaPg({ connectionString });
-    // const prisma = new PrismaClient({ adapter });
 
+    // Queries Prisma for products in descending orde
     const data = await prisma.product.findMany({
+
+        // Limits the number returned. In Prisma, "take" means how many records to return
         take: LATEST_PRODUCTS_LIMIT,
+        // sort by the created_at field in descending order
         orderBy: { created_at: "desc" },
     });
 
+    // Converts Prisma results into plain JS objects 
     return convertToPlainObject(data);
 }
 
