@@ -1,5 +1,7 @@
 'use server';
 
+// This page contains server actions that run the backend logic when forms are submitted, including sign-up/sign-in/sign-out.
+
 import { signInFormSchema, signUpFormSchema } from "../validators";
 import { signIn, signOut } from "@/auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
@@ -31,6 +33,7 @@ export async function signOutUser() {
 }
 
 // Sign up user
+// prevState means “what happened last submit”, fornData means “what user typed this submit”
 export async function signUpUser(prevState: unknown, formData: FormData) {
     try {
         const user = signUpFormSchema.parse({
@@ -66,3 +69,12 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
         return { success: false, message: 'User was not registered' }
     }
 }
+
+// Code explanations
+
+// parse() is a Zod method that validates input against a schema and returns typed, cleaned data if valid
+// hashSync(user.password, 10) turns a plain-text password into a secure one-way hash. 10 is the salt layer, higher is slower 
+// but more secure
+
+// signIn('credentials', { email: user.email, password: plainPassword }) this code immediately logs the new user in after registration
+// credentials tells NextAuth to use your Credentials provider. NextAuth then checks that against the DB hash via my authorize logic
