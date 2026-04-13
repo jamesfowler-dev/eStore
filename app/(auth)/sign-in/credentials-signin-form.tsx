@@ -18,7 +18,7 @@ const CredentialsSignInForm = () => {
     });
 
     const searchParams = useSearchParams();
-    const callbackUrl = searchParams.get('callbackUrl' || '/');
+    const callbackUrl = searchParams.get('callbackUrl') ?? '/';
 
     // Custom sign-in button
     const SignInButton = () => {
