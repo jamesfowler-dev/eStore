@@ -17,11 +17,18 @@ export const metadata: Metadata = {
     title: 'Sign In',
 };
 
-const SignInPage = async () => {
+const SignInPage = async (props: {
+    searchParams: Promise<{
+        callbackUrl: string
+    }>
+}) => { 
+    const { callbackUrl } = await props.searchParams;
+
     const session = await auth();
 
+    // This returns the user to home page after login and stops them returning until logout
     if(session) {
-        return redirect('/');
+        return redirect(callbackUrl || '/');
     }
 
 
