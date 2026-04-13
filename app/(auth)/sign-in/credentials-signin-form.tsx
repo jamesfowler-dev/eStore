@@ -5,11 +5,30 @@ import { Input } from '@/components/ui/input';
 import { SignInDefaultValues } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
+import { signInWithCredentials } from '@/lib/actions/user.actions';
 
 
 const CredentialsSignInForm = () => {
+    const [data, action] = useActionState(signInWithCredentials, {
+        success: false,
+        message: '',
+    })
+
+    // Custom sign-in button
+    const SignInButton = () => {
+        const { pending } = useFormStatus();
+
+        return (
+            <Button type="submit" disabled={pending} className='w-full' variant='default'>
+                { pending ? 'Signing In...' : 'Sign In' }
+            </Button>
+        )
+    }
+
     return (
-    <form>
+    <form action={action}>
         <div className="space-y-6">
             <div>
                 <Label htmlFor='email'>Email</Label>
@@ -34,8 +53,14 @@ const CredentialsSignInForm = () => {
                 />
             </div>
             <div>
-                <Button className='w-full' variant='default'>Sign In</Button>
+                <SignInButton />
             </div>
+            { data && !data.success && (
+                <div className="text-center text-destructive">
+                    {data.message}
+                </div>
+            )}
+
             <div className="text-sm text-center text-muted-foreground">
                 Don&apos;t have an account? {' '}
                 <Link 
@@ -58,3 +83,6 @@ export default CredentialsSignInForm;
 
 // {' '} adds an explicit space in JSX after the text, so the next element (the Sign Up link)
 //  isn’t glued directly to the ?
+
+// The conditional rendering on line 51; If there is response data and the action failed, 
+// show the error message in red centered text
