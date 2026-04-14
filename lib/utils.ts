@@ -3,6 +3,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+
 // Combines CSS class names safely. Uses clsx to join conditional classes and tailwind-merge to remove conflicting Tailwind classes
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -22,11 +23,10 @@ export function formatNumberWithDecimal(num: number): string {
 
 // Format errors 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function formatError(error: any ) {
+export function formatError(error: any ) {
     if (error.name === 'ZodError') {
-        // Handle Zod error
-        const fieldErrors = Object.keys(error.issues).map(
-            (field) => error.issues[field].message
+        const fieldErrors = error.issues.map(
+            (issue: any) => issue.message
         );
 
         return fieldErrors.join('. ');
@@ -35,13 +35,18 @@ export async function formatError(error: any ) {
         error.name === 'PrismaClientKnownRequestError' && 
         error.code === 'P2002'
     ) {
-        // Handle Prisma error   
-        const field = error.meta?.target ? error.meta.target[0] : 'Field'; 
-        return `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`
-    } else {
-        // Handle all other errors
-        return typeof error.message === 'string' 
-            ? error.message 
-            : JSON.stringify(error.message)
-    } 
-}
+         const originalMessage = error.meta?.driverAdapterError?.cause?.originalMessage ?? '';
+
+
+        if (originalMessage.includes('user_email_idx')) {
+            return 'Email already exists';
+        }
+
+        if (originalMessage.includes('user_name_idx')) {
+            return 'Name already exists';
+        }
+
+        return 'Field already exists';
+    }
+
+}   
