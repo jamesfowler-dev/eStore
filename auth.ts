@@ -1,3 +1,8 @@
+// This file is my auth configuration page. It defines how sign-in works, 
+// how sessions/tokens are shaped and what auth helpers my app can call
+// Moved cookie creation to middleware as auth.ts really should handle 
+// login/session/token behavior only. Also avoids Edge runtime crashes
+
 import NextAuth from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/db/prisma'; 
@@ -5,6 +10,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { compareSync } from 'bcrypt-ts-edge';
 import type { NextAuthConfig } from 'next-auth';
 
+// Here we set auth routes and session behaviour 
 export const config = {
     pages: {
         signIn: '/sign-in',
@@ -14,6 +20,7 @@ export const config = {
         strategy: 'jwt',
         maxAge: 30 * 24 * 60 * 60,
     },
+    // This part connects NextAuth to the database
     adapter: PrismaAdapter(prisma),
     providers: [CredentialsProvider({
         credentials: {
@@ -80,8 +87,11 @@ export const config = {
                 }
             }
             return token;
-        }
+        },
     },
 } satisfies NextAuthConfig; 
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config);
+
+// Exports auth utilities for the rest of the app. Handers for API auth routes, 
+// auth for reading current session server-side and signin/signout helps for actions/components
