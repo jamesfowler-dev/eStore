@@ -50,3 +50,17 @@ export function formatError(error: any ) {
     }
 
 }   
+
+// Round number to 2 decimal places
+// What does EPSILON do? It helps avoid floating-point precision edge cases. 
+// Example: without EPSILON, 1.005 can incorrectly round to 1.00 in JavaScript; 
+// EPSILON improves chances of correct 1.01.
+export const round2 = (value: number | string) => {
+    if (typeof value === 'number') {
+        return Math.round((value + Number.EPSILON) * 100) / 100;
+    } else if (typeof value === 'string') {
+        return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+    } else {
+        throw new Error('Value is not a number or string')
+    }
+}
