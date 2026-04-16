@@ -12,6 +12,7 @@ import { auth } from '@/auth';
 import { prisma } from '@/db/prisma';
 import { cartItemSchema, insertCartSchema } from '../validators';
 import { revalidatePath } from 'next/cache';
+import { Prisma } from '@prisma/client';
 
 
 // Calculate cart prices
@@ -28,11 +29,9 @@ const calcPrice = (items: CartItem[]) => {
             itemsPrice: itemsPrice.toFixed(2),
             shippingPrice: shippingPrice.toFixed(2),
             taxPrice: taxPrice.toFixed(2),
-            totalPrice: totalPrice .toFixed(2),
+            totalPrice: totalPrice.toFixed(2),
         }
 }
-
-
 
 
 // here data is the parameter and CartItem is the type 
@@ -57,7 +56,7 @@ export async function addItemToCart(data: CartItem) {
         // Find product in database
         const product = await prisma.product.findFirst({
             where: {id: item.productId}
-        }); 
+            }); 
         if (!product) throw new Error('Product not found'); 
         if (!cart) {
             // Create new cart object
@@ -70,33 +69,69 @@ export async function addItemToCart(data: CartItem) {
                 // Spreads in computed price fields returned by calcPrice, such as itemsPrice, 
                 // shippingPrice, taxPrice, and totalPrice
                 ...calcPrice([item])
-                });
+            });
 
-                // Add to database 
-                await prisma.cart.create({
-                    data: newCart
-                });
+            // Add to database 
+            await prisma.cart.create({
+                data: newCart
+            });
 
-                // Revalidate product page
-                revalidatePath(`/product/${product.slug}`)
+            // Revalidate product page
+            revalidatePath(`/product/${product.slug}`);
 
-                return {
-                    success: true,
-                    message: 'item added to cart',
-                };
+            return {
+                success: true,
+                message: `${product.name} added to cart`,
+            };
+        } else {
+            // Check if item is already in the cart 
+            // (cart.items as CartItem[]) means treat cart.items as an array of CartItem objects
+            // find loops through the array and returns the first element that matches the condition
+            // For each cart item x, compare its productId with the incoming item.productId
+            const existItem = (cart.items as CartItem[]).find(
+                (x) => x.productId === item.productId); 
+                    
+            if (existItem) {
+                // Check the stock
+                if (product.stock < existItem.qty + 1) {
+                    throw new Error('Not enough stock');
+                }
+                // Increase the quantity
+                (cart.items as CartItem[]).find(
+                    (x) => x.productId === item.productId)!.qty = existItem.qty + 1; 
             } else {
-                
+                // If item does not exists in the cart
+                // Check stock
+                if (product.stock < 1) throw new Error('Not enough stock');
+
+                // Add item to the cart.items
+                cart.items.push(item); 
             }
-        
-        } catch (error) {
+
+            // Save to database
+            await prisma.cart.update({
+                where: { id: cart.id },
+                data: {
+                    items: cart.items as Prisma.CartUpdateitemsInput[],
+                    ...calcPrice(cart.items as CartItem[]),
+                },
+            });
+
+            revalidatePath(`/product/${product.slug}`);
+
+            return {
+                success: true,
+                message: `${product.name} ${existItem ? 'updated in' : 'added to'} cart`,
+            }
+        }
+    } catch (error) {
+        console.error('Error in addItemToCart:', error);
         return {
             success: false,
             message: formatError(error),
-        }
-        }
-
-
-}
+        };
+    }
+};
 
 
 export async function getMyCart() {
@@ -130,4 +165,6 @@ export async function getMyCart() {
         });
 
 }
+
+
 

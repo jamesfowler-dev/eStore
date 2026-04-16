@@ -29,12 +29,13 @@ const AddToCart = ({item}: {item: CartItem}) => {
             return;
             }
 
+            // Handle success add to cart
             toast.success("Added to cart", {
-                className: "!bg-transparent !text-foreground !shadow-none",
+                description: res.message,
+                className: "text-white border-green-600 shadow-lg",
                 style: {
-                    border: "1px solid rgb(209 213 219)", // gray-300
-                    background: "transparent",
-                    boxShadow: "none",
+                    backgroundColor: '#ffffff',
+                    zIndex: 9999,
                 },
                 actionButtonStyle: {
                     backgroundColor: "#000000",
@@ -62,3 +63,5 @@ const AddToCart = ({item}: {item: CartItem}) => {
 }
  
 export default AddToCart;
+
+
