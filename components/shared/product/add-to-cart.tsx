@@ -69,10 +69,11 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
                     },                    
                     action: {
                         label: "Go To Cart",
-                        onClick: () => router.push("/cart"),
+                        onClick: () => router.push("/cart"), // Click the button to navigate to /cart
                     },
                 });
             } catch {
+                // Catch any thrown errors and show error toast
                 toast.error('Failed to add item to cart');
             } 
         })
@@ -84,9 +85,12 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
         startTransition(async () => {
             // Call server action to remove item from cart
             const res = await removeItemFromCart(item.productId);
+            //  Extract message, handling both string and object formats to avoid crashing. 
+            // Basically is it a string? if yes res.message, f not try to extract .message or use fallback
             const msg = typeof res.message === 'string' ? res.message : (
                 res.message?.message ?? 'Item updated');
             
+            // Show success or error toast depending on response
             if (res.success) {
                 toast.success(msg, {
                     className: "text-white border-green-600 shadow-lg",
@@ -101,10 +105,12 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
         });
     }
 
-    // Check if item is in cart
+    // Check if item is in cart. Searches the cart for an existing item with the same productId. 
+    // If found, existItem is that item; otherwise it's undefined
     const existItem = cart && cart.items.find((x) => x.productId === item.productId);
 
-    return existItem ? (
+    return existItem ? ( 
+        // If item is in cart
         <div>
             <Button 
                 type='button' 
@@ -131,6 +137,7 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
             </Button>
         </div>
     ): (
+        // If item is NOT in cart
         <Button 
             className='w-full' 
             type='button' 
