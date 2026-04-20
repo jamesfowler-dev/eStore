@@ -17,7 +17,7 @@ const UserButton = async () => {
 
     if (!session) {
         return (
-            <Button asChild>
+            <Button asChild style={{ borderRadius: '8px' }}>
                 <Link href="/sign-in">
                     <UserIcon /> Sign-in
                 </Link>
@@ -51,7 +51,12 @@ const UserButton = async () => {
                     </DropdownMenuGroup>
                     <DropdownMenuItem className='p-0 mb-1'>
                         <form action={ signOutUser } className='w-full'>
-                            <Button type='submit' className='w-full py-4 px-2 h-4 justify-start' variant='ghost'>
+                            <Button 
+                                type='submit' 
+                                className='w-full py-4 px-2 h-4 justify-start' 
+                                style={{ borderRadius: '8px' }}
+                                variant='ghost'
+                            >
                                 Sign Out
                             </Button>
                         </form>

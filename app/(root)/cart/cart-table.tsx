@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTransition } from "react";
 import { addItemToCart, removeItemFromCart } from "@/lib/actions/cart.actions";
@@ -17,10 +17,13 @@ import {
     TableCell
 } from '@/components/ui/table';
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/utils";
+import { Card, CardContent } from '@/components/ui/card';
+import { start } from "repl";
 
 
 const CartTable = ({ cart }: { cart?: Cart }) => {
-    // const router = useRouter();
+    const router = useRouter();
     const [isPending, startTransition] = useTransition();
 
 
@@ -64,6 +67,8 @@ const CartTable = ({ cart }: { cart?: Cart }) => {
                                              disabled={isPending} 
                                              variant='outline' 
                                              type='button' 
+                                             className="rounded-lg" 
+                                             style={{ borderRadius: '8px' }}
                                              onClick={() => startTransition(async () => {
                                                 const res = await removeItemFromCart(item.productId)
 
@@ -89,7 +94,9 @@ const CartTable = ({ cart }: { cart?: Cart }) => {
                                             <Button 
                                                 disabled={isPending} 
                                                 variant='outline' 
-                                                type='button' 
+                                                type='button'
+                                                className="rounded-lg" 
+                                                style={{ borderRadius: '8px' }}
                                                 onClick={() => startTransition(async () => {
                                                 const res = await addItemToCart(item)
 
@@ -118,6 +125,31 @@ const CartTable = ({ cart }: { cart?: Cart }) => {
                             </TableBody>
                         </Table>
                     </div>
+
+                    <Card>
+                        <CardContent className='p-4 gap-4'>
+                            <div className="pb-3 text-xl">
+                                Subtotal ({ cart.items.reduce(
+                                    (total, item) => total += item.qty, 0)
+                                    }):
+                                <span className="font-bold">
+                                    {formatCurrency(cart.itemsPrice)}
+                                </span>
+                            </div>
+                            <Button 
+                                className='w-full' 
+                                style={{ borderRadius: '8px' }}
+                                disabled={isPending} 
+                                onClick={() => startTransition(() => router.push('/shipping-address'))}>
+                                    {isPending? (
+                                        <Loader className='w-4 h-4 animate spin' />
+                                    ) : (
+                                        <ArrowRight className='w-4 h-4' />
+                                    )}{' '}
+                                    Proceed to Checkout
+                            </Button>
+                        </CardContent>
+                    </Card>
                 </div>
             ) }
         </> 
