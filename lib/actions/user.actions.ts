@@ -80,3 +80,12 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
 
 // signIn('credentials', { email: user.email, password: plainPassword }) this code immediately logs the new user in after registration
 // credentials tells NextAuth to use your Credentials provider. NextAuth then checks that against the DB hash via my authorize logic
+
+// Get user by the ID
+export async function getUserByID(userId: string) {
+    const user = await prisma.user.findFirst({
+        where: { id: userId },
+    });
+    if(!user) throw new Error('User not found');
+    return user; 
+}
