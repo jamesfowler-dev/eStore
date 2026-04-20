@@ -78,6 +78,7 @@ export async function addItemToCart(data: CartItem) {
 
             // Revalidate product page
             revalidatePath(`/product/${product.slug}`);
+            revalidatePath('/cart');
 
             return {
                 success: true,
@@ -118,6 +119,7 @@ export async function addItemToCart(data: CartItem) {
             });
 
             revalidatePath(`/product/${product.slug}`);
+            revalidatePath('/cart');
 
             return {
                 success: true,
@@ -206,6 +208,7 @@ export async function removeItemFromCart(productId: string) {
         });
 
         revalidatePath(`/product/${product.slug}`);
+        revalidatePath('/cart');
 
         return { 
             success: true,
