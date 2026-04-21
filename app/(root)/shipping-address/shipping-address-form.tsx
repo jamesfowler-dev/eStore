@@ -6,7 +6,7 @@ import { ShippingAddress } from "@/types";
 import { shippingAddressSchema } from "@/lib/validators";
 import { useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ControllerRenderProps, useForm } from "react-hook-form"
+import { ControllerRenderProps, useForm, SubmitHandler } from "react-hook-form"
 import { z } from "zod";
 import { 
     Form, 
@@ -19,22 +19,42 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Loader } from "lucide-react";
+import { updateUserAddress } from "@/lib/actions/user.actions";
 
 
 const ShippingAddressForm = ({ address }: { address: 
     ShippingAddress }) => {
+        // Initialises the Next.js router for navigation
         const router = useRouter();
+        // Destructures the toast function from the Sonner notification library for showing toast messages
         const { toast } = useSonner();
 
+
+    // Initialises the React Hook Form instance with Zod validation and default values from the address prop
     const form = useForm<z.infer<typeof shippingAddressSchema>>({
         resolver: zodResolver(shippingAddressSchema),
         defaultValues: address || shippingAddressSchema, 
     });
 
+    // Sets up React’s transition state for handling async UI updates
     const [isPending, startTransition] = useTransition();
 
-    const onSubmit = (values) => {
-        return;
+    // Defines a placeholder onSubmit function for form submission
+    const onSubmit:SubmitHandler<z.infer<typeof shippingAddressSchema>> = async (values) => {
+
+        startTransition(async () => {
+            const res = await updateUserAddress(values);
+
+            if (!res.success) {
+                toast({
+                    variant: 'destructive',
+                    description: res.message,
+                });
+                return;
+            }
+            router.push('/payment-method')
+        })
+
     }
 
 
@@ -192,3 +212,6 @@ const ShippingAddressForm = ({ address }: { address:
 }
  
 export default ShippingAddressForm;
+
+// line 55: Wraps the form in a custom Form component, passing form props
+// line 186: Shows a loading spinner (Loader icon) if submitting, otherwise shows an ArrowRight icon and the text “Continue”.
