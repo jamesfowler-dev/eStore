@@ -9,14 +9,25 @@ export async function getLatestProducts() {
 
     // Queries Prisma for products in descending orde
     const data = await prisma.product.findMany({
-
-        // Limits the number returned. In Prisma, "take" means how many records to return
         take: LATEST_PRODUCTS_LIMIT,
-        // sort by the created_at field in descending order
         orderBy: { created_at: "desc" },
+        select: {
+            id: true,
+            name: true,
+            slug: true,
+            category: true,
+            brand: true,
+            description: true,
+            stock: true,
+            images: true,
+            isFeatured: true,
+            banner: true,
+            price: true,
+            rating: true,
+            numReviews: true,
+            created_at: true,
+        },
     });
-
-    // Converts Prisma results into plain JS objects 
     return convertToPlainObject(data);
 }
 
@@ -25,5 +36,21 @@ export async function getLatestProducts() {
 export async function getProductBySlug(slug: string) {
     return await prisma.product.findFirst({
         where: { slug: slug },
+        select: {
+            id: true,
+            name: true,
+            slug: true,
+            category: true,
+            brand: true,
+            description: true,
+            stock: true,
+            images: true,
+            isFeatured: true,
+            banner: true,
+            price: true,
+            rating: true,
+            numReviews: true,
+            created_at: true,
+        },
     });
 }

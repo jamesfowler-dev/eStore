@@ -22,32 +22,54 @@ export function formatNumberWithDecimal(num: number): string {
 
 
 // Format errors 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function formatError(error: any ) {
-  if (error.name === 'ZodError') {
-    const fieldErrors = error.issues.map(
-      (issue: any) => issue.message
-    );
+export function formatError(error: unknown) {
+    // This is type guard for Zod Errors. This block checks that error is an object, not null, 
+    // has a name property equal to 'ZodError', and has an issues property that is an array.
+    // This safely narrows error to a ZodError-like object.
+    if (
+        typeof error === 'object' &&
+        error !== null &&
+        'name' in error &&
+        error.name === 'ZodError' &&
+        'issues' in error &&
+        Array.isArray((error as { issues?: unknown }).issues)
+    ) {
+        // Accessing issues with a specific type:
+        // This line asserts that error.issues is an array of objects with a message property, 
+        // then maps over them to extract the message strings.
+        const fieldErrors = (error as { issues: { message: string }[] }).issues.map(
+        (issue: { message: string }) => issue.message
+        );
+        return fieldErrors.join('. ');
+    
+        // Type Guard for PrismaClientKnownRequestError:
+        // This block checks that error is an object, not null, has a name property equal to
+        //  'PrismaClientKnownRequestError', and a code property equal to 'P2002'. This safely narrows 
+        // error to a Prisma error of a specific type.
+    } else if (
+        typeof error === 'object' &&
+        error !== null &&
+        'name' in error &&
+        error.name === 'PrismaClientKnownRequestError' &&
+        'code' in error &&
+        error.code === 'P2002'
+    ) {
+        // Accessing deeply nested meta property with a specific type:
+        const originalMessage = (
+            error as { meta?: { driverAdapterError?: { cause?: { originalMessage?: string } } }
+        }).meta?.driverAdapterError?.cause?.originalMessage ?? '';
 
-    return fieldErrors.join('. ');
 
-  } else if (
-    error.name === 'PrismaClientKnownRequestError' && 
-    error.code === 'P2002'
-  ) {
-     const originalMessage = error.meta?.driverAdapterError?.cause?.originalMessage ?? '';
+        if (originalMessage.includes('user_email_idx')) {
+        return 'Email already exists';
+        }
 
+        if (originalMessage.includes('user_name_idx')) {
+        return 'Name already exists';
+        }
 
-    if (originalMessage.includes('user_email_idx')) {
-      return 'Email already exists';
+        return 'Field already exists';
     }
-
-    if (originalMessage.includes('user_name_idx')) {
-      return 'Name already exists';
-    }
-
-    return 'Field already exists';
-  }
 
 }   
 

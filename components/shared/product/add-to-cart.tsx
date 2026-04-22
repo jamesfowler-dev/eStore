@@ -9,9 +9,14 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation'; // Navigate between pages
 import { Cart, CartItem } from '@/types'; // TypeScript types for cart and items
 import { toast } from 'sonner'; // Toast notification library
+
 import { addItemToCart, removeItemFromCart } from '@/lib/actions/cart.actions'; // Server actions
 import { Plus, Minus, Loader } from 'lucide-react'; // Icon components
 import { useTransition } from 'react';
+
+// Type for add-to-cart server action response
+type AddToCartResponse = { success: boolean; message?: string };
+
 
 
 const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
@@ -27,7 +32,7 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
         startTransition(async () => {
             try {
                 // Calls server action to add item
-                const res = await addItemToCart(item);
+                const res: AddToCartResponse | undefined = await addItemToCart(item);
 
                 if (!res) {
                 toast.error('Failed to add item to cart', {
@@ -38,21 +43,18 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
 
                 //  If response indicates failure , extract message (handle both string and object formats) and show error toast
                 if (!res.success) {
-                const errorMsg = typeof res.message === 'string' ? res.message : (
-                    res.message?.message ?? 'Failed to add item to cart');
-                toast.error(errorMsg, {
-                    className: "bg-red-600 text-white border-red-700",
-                    style: {
-                        zIndex: 9999,
-                    },
-                });
-                return;
+                    const errorMsg = res.message ?? 'Failed to add item to cart';
+                    toast.error(errorMsg, {
+                        className: "bg-red-600 text-white border-red-700",
+                        style: {
+                            zIndex: 9999,
+                        },
+                    });
+                    return;
                 }
 
-                // If successfull, extract success, show success toast with description of what was added, 
-                // "Go To Cart" button & click the button to navigate to /cart
-                const successMsg = typeof res.message === 'string' ? res.message : (
-                    res.message?.message ?? 'Item added successfully');
+                // If successful, show success toast with description of what was added
+                const successMsg = res.message ?? 'Item added successfully';
                 toast.success("Added to cart", {
                     description: successMsg,
                     className: "text-white border-green-600 shadow-lg",
@@ -66,10 +68,10 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
                         borderRadius: "4px",
                         padding: "4px 8px",
                         fontWeight: "500",
-                    },                    
+                    },
                     action: {
                         label: "Go To Cart",
-                        onClick: () => router.push("/cart"), // Click the button to navigate to /cart
+                        onClick: () => router.push("/cart"),
                     },
                 });
             } catch {
@@ -87,8 +89,7 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
             const res = await removeItemFromCart(item.productId);
             //  Extract message, handling both string and object formats to avoid crashing. 
             // Basically is it a string? if yes res.message, f not try to extract .message or use fallback
-            const msg = typeof res.message === 'string' ? res.message : (
-                res.message?.message ?? 'Item updated');
+            const msg = res.message ?? 'Item updated';
             
             // Show success or error toast depending on response
             if (res.success) {
