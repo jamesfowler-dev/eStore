@@ -5,10 +5,11 @@
 
 import NextAuth from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
-import { prisma } from '@/db/prisma'; 
+import { prisma } from '@/db/prisma';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { compareSync } from 'bcrypt-ts-edge';
 import type { NextAuthConfig } from 'next-auth';
+import { cookies } from 'next/headers'; 
 
 // Here we set auth routes and session behaviour 
 export const config = {
@@ -33,8 +34,8 @@ export const config = {
             // Find user in database
             const user = await prisma.user.findFirst({
                 where: {
-                    email: credentials.email as string
-                }
+                    email: credentials.email as string,
+                },
             });
 
             // Check if user exists and if the password matches
@@ -48,7 +49,7 @@ export const config = {
                         name: user.name,
                         email: user.email,
                         role: user.role
-                    }
+                    };
                 }
             }
 
@@ -57,7 +58,7 @@ export const config = {
         }
     })],
     callbacks: {
-        async session({ session, user, trigger, token }: any) {
+        async session({ session, user, trigger, token }) {
             // Set the user ID from the token 
             session.user.id = token.sub;
             session.user.role = token.role;
@@ -70,9 +71,10 @@ export const config = {
 
             return session
         },
-        async jwt({ token, user, trigger, session }: any) {
+        async jwt({ token, user, trigger, session }) {
             // Assign user fields to token 
             if (user) {
+                token.id = user.id;
                 token.role = user.role; 
 
                 // If user has no name then use email 
@@ -82,13 +84,46 @@ export const config = {
                     // Update database to reflect the token name
                     await prisma.user.update({
                         where: {id: user.id},
-                        data: {name: token.name}
+                        data: {name: token.name},
                     });
                 }
+
+                if (trigger === 'signIn' || trigger === 'signUp') {
+                    const cookiesObject = await cookies();
+                    const sessionCartId = cookiesObject.get('sessionCartId')?.value;
+
+                    if (sessionCartId) {
+                        const sessionCart = await prisma.cart.findFirst({
+                            where: { sessionCartId },
+                        });
+
+                        if (sessionCart) {
+                            // Delete current user cart
+                            await prisma.cart.deleteMany({
+                                where: { userId: user.id},
+                            });
+
+                            // Assign new cart
+                            await prisma.cart.update({
+                                where: {id: sessionCart.id},
+                                data: {userId: user.id},
+                            });
+                        }
+                    }
+                }
             }
+
+            // Handle session updates
+            if (session?.user.name && trigger === 'update') {
+                token.name = session.user.name;
+            }
+
             return token;
         },
     },
+// The line below is a TypeScript feature that checks, at compile time, that your config 
+// object matches the NextAuthConfig type. It ensures your configuration object has all the
+// required properties and correct types for NextAuth
 } satisfies NextAuthConfig; 
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config);
