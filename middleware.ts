@@ -7,7 +7,7 @@
 // These import two classes from Next.js that intercept requests and responses.
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import NEXTAUTH_SECRET from 'dotenv'; 
+import NEXTAUTH_SECRET from 'dotenv';
 
 // Next.js looks for this function and automatically runs it before every request.
 export async function middleware(request: NextRequest) {
@@ -33,9 +33,10 @@ export async function middleware(request: NextRequest) {
   // Calls getToken() and pass in NEXTAUTH secret to get the current user session
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
-  // Check if user is not authenticated and accessing a protected path/route. If so, returns false but should redirect to /sign-in
+  // Check if user is not authenticated and accessing a protected path/route. If so, 
+  // returns false but should redirect to /sign-in
   if (!token && protectedPaths.some((p) => p.test(pathname))) {
-  return NextResponse.redirect(new URL('/sign-in', request.url));
+    return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
   // Checks if the user already has a cookie, if they don't we create one
