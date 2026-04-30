@@ -88,7 +88,7 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
 // credentials tells NextAuth to use your Credentials provider. NextAuth then checks that against the DB hash via my authorize logic
 
 // Get user by the ID
-export async function getUserByID(userId: string) {
+export async function getUserById(userId: string) {
     const user = await prisma.user.findFirst({
         where: { id: userId },
     });

@@ -2,7 +2,7 @@
 
 import { auth } from "@/auth";
 import { getMyCart } from "@/lib/actions/cart.actions";
-import { getUserByID } from "@/lib/actions/user.actions";
+import { getUserById } from "@/lib/actions/user.actions";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ShippingAddress } from "@/types";
@@ -34,16 +34,16 @@ const ShippingAddressPage = async () => {
     if (!userId) redirect('/sign-in');
 
     // Fetches the user’s data from the database
-    const user = await getUserByID(userId);
+    const user = await getUserById(userId);
 
     // Renders the ShippingAddressForm component, passing the user’s address as a prop
-    return ( 
-        <>  
+    return (
+        <>
             <CheckoutSteps current={1} />
             <ShippingAddressForm address={user.address as ShippingAddress}
-            /> 
+            />
         </>
     );
 };
- 
+
 export default ShippingAddressPage;

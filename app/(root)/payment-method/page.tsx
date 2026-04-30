@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { auth } from "@/auth";
-import { getUserByID } from "@/lib/actions/user.actions";
+import { getUserById } from "@/lib/actions/user.actions";
 import PaymentMethodForm from "./payment-method-form";
 import CheckoutSteps from "@/components/shared/checkout-steps";
 
@@ -15,7 +15,7 @@ const PaymentMethodPage = async () => {
 
     if (!userId) throw new Error('User not found');
 
-    const user = await getUserByID(userId);
+    const user = await getUserById(userId);
 
     return (
         <>
