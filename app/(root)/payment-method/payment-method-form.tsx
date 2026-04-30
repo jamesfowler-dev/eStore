@@ -36,8 +36,15 @@ const PaymentMethodForm = ({
             const res = await updateUserPaymentMethod(values);
 
             if (!res.success) {
-                toast(res.message, { variant: 'destructive' });
-                return;
+                toast.error(res.message)
+            } else {
+                toast.success(res.message, {
+                    className: "text-white border-green-600 shadow-lg",
+                    style: {
+                        backgroundColor: '#ffffff',
+                        zIndex: 9999,
+                    }
+                })
             }
             router.push('/place-order');
         })
