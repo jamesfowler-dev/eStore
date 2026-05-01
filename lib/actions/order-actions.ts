@@ -1,7 +1,7 @@
 'use server';
 
 import { isRedirectError } from "next/dist/client/components/redirect-error";
-import { formatError } from "../utils";
+import { convertToPlainObject, formatError } from "../utils";
 import { getMyCart } from "./cart.actions";
 import { auth } from "@/auth";
 import { getUserById } from "./user.actions";
@@ -109,4 +109,35 @@ export async function createOrder() {
 
 
 
-// Use .map() instead of for-of loops for transforming arrays or when you want to run async operations in parallel (with Promise.all).
+// Use .map() instead of for-of loops for transforming arrays or when you want 
+// to run async operations in parallel (with Promise.all).
+
+// Get an order by id
+
+// This function fetches an order by its ID, including its order items and the user’s 
+// name and email, then returns the result as a plain object
+export async function getOrderById(orderId: string) {
+    // uses Prisma client to asynchronously find the firs order in the db matching 
+    // the criteria below and storing the result in data
+    const data = await prisma.order.findFirst({
+        // Where specifies the filter criteria for the query 
+        where: {
+            id: orderId,
+        },
+        // Specifies related data to include in the result
+        include: {
+            orderitems: true,
+            // Include the related user, but only select their name and email fields
+            user: {
+                select: {
+                    name: true,
+                    email: true
+                }
+            },
+        },
+    });
+
+    // Converts the Prisma result to a plain JavaScript object (removing any special 
+    // Prisma properties)
+    return convertToPlainObject(data);
+}
