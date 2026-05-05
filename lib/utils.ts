@@ -23,55 +23,56 @@ export function formatNumberWithDecimal(num: number): string {
 
 // Format errors 
 export function formatError(error: unknown) {
-    // This is type guard for Zod Errors. This block checks that error is an object, not null, 
-    // has a name property equal to 'ZodError', and has an issues property that is an array.
-    // This safely narrows error to a ZodError-like object.
-    if (
-        typeof error === 'object' &&
-        error !== null &&
-        'name' in error &&
-        error.name === 'ZodError' &&
-        'issues' in error &&
-        Array.isArray((error as { issues?: unknown }).issues)
-    ) {
-        // Accessing issues with a specific type:
-        // This line asserts that error.issues is an array of objects with a message property, 
-        // then maps over them to extract the message strings.
-        const fieldErrors = (error as { issues: { message: string }[] }).issues.map(
-        (issue: { message: string }) => issue.message
-        );
-        return fieldErrors.join('. ');
-    
-        // Type Guard for PrismaClientKnownRequestError:
-        // This block checks that error is an object, not null, has a name property equal to
-        //  'PrismaClientKnownRequestError', and a code property equal to 'P2002'. This safely narrows 
-        // error to a Prisma error of a specific type.
-    } else if (
-        typeof error === 'object' &&
-        error !== null &&
-        'name' in error &&
-        error.name === 'PrismaClientKnownRequestError' &&
-        'code' in error &&
-        error.code === 'P2002'
-    ) {
-        // Accessing deeply nested meta property with a specific type:
-        const originalMessage = (
-            error as { meta?: { driverAdapterError?: { cause?: { originalMessage?: string } } }
-        }).meta?.driverAdapterError?.cause?.originalMessage ?? '';
+  // This is type guard for Zod Errors. This block checks that error is an object, not null, 
+  // has a name property equal to 'ZodError', and has an issues property that is an array.
+  // This safely narrows error to a ZodError-like object.
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'name' in error &&
+    error.name === 'ZodError' &&
+    'issues' in error &&
+    Array.isArray((error as { issues?: unknown }).issues)
+  ) {
+    // Accessing issues with a specific type:
+    // This line asserts that error.issues is an array of objects with a message property, 
+    // then maps over them to extract the message strings.
+    const fieldErrors = (error as { issues: { message: string }[] }).issues.map(
+      (issue: { message: string }) => issue.message
+    );
+    return fieldErrors.join('. ');
+
+    // Type Guard for PrismaClientKnownRequestError:
+    // This block checks that error is an object, not null, has a name property equal to
+    //  'PrismaClientKnownRequestError', and a code property equal to 'P2002'. This safely narrows 
+    // error to a Prisma error of a specific type.
+  } else if (
+    typeof error === 'object' &&
+    error !== null &&
+    'name' in error &&
+    error.name === 'PrismaClientKnownRequestError' &&
+    'code' in error &&
+    error.code === 'P2002'
+  ) {
+    // Accessing deeply nested meta property with a specific type:
+    const originalMessage = (
+      error as {
+        meta?: { driverAdapterError?: { cause?: { originalMessage?: string } } }
+      }).meta?.driverAdapterError?.cause?.originalMessage ?? '';
 
 
-        if (originalMessage.includes('user_email_idx')) {
-        return 'Email already exists';
-        }
-
-        if (originalMessage.includes('user_name_idx')) {
-        return 'Name already exists';
-        }
-
-        return 'Field already exists';
+    if (originalMessage.includes('user_email_idx')) {
+      return 'Email already exists';
     }
 
-}   
+    if (originalMessage.includes('user_name_idx')) {
+      return 'Name already exists';
+    }
+
+    return 'Field already exists';
+  }
+
+}
 
 // Round number to 2 decimal places
 // What does EPSILON do? It helps avoid floating-point precision edge cases. 
@@ -104,3 +105,50 @@ export function formatCurrency(amount: number | string | null) {
     return 'NaN';
   }
 }
+
+
+// Shorten Uuid
+export function formatId(id: string) {
+  return `..${id.substring(id.length - 6)}`;
+}
+
+// Format date and times 
+export const formatDateTime = (dateString: Date) => {
+  const dateTimeOptions: Intl.DateTimeFormatOptions = {
+    month: 'short', // abbreviated month name (e.g., 'Oct')
+    year: 'numeric', // shows the full year (e.g., "2026")
+    day: 'numeric', // numeric day of the month (e.g., '25')
+    hour: 'numeric', // numeric hour (e.g., '8')
+    minute: 'numeric', // numeric minute (e.g., '30')
+    hour12: true, // use 12-hour clock (true) or 24-hour clock (false)
+  };
+  const dateOptions: Intl.DateTimeFormatOptions = {
+    weekday: 'short', // abbreviated weekday name (e.g., 'Mon')
+    month: 'short', // abbreviated month name (e.g., 'Oct')
+    year: 'numeric', // numeric year (e.g., '2023')
+    day: 'numeric', // numeric day of the month (e.g., '25')
+  };
+  const timeOptions: Intl.DateTimeFormatOptions = {
+    hour: 'numeric', // numeric hour (e.g., '8')
+    minute: 'numeric', // numeric minute (e.g., '30')
+    hour12: true, // use 12-hour clock (true) or 24-hour clock (false)
+  };
+  const formattedDateTime: string = new Date(dateString).toLocaleString(
+    'en-US',
+    dateTimeOptions
+  );
+  const formattedDate: string = new Date(dateString).toLocaleString(
+    'en-US',
+    dateOptions
+  );
+  const formattedTime: string = new Date(dateString).toLocaleString(
+    'en-US',
+    timeOptions
+  );
+  return {
+    dateTime: formattedDateTime,
+    dateOnly: formattedDate,
+    timeOnly: formattedTime,
+  };
+};
+
