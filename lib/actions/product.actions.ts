@@ -10,7 +10,7 @@ export async function getLatestProducts() {
     // Queries Prisma for products in descending orde
     const data = await prisma.product.findMany({
         take: LATEST_PRODUCTS_LIMIT,
-        orderBy: { created_at: "desc" },
+        orderBy: { createdAt: "desc" },
         select: {
             id: true,
             name: true,
@@ -25,7 +25,7 @@ export async function getLatestProducts() {
             price: true,
             rating: true,
             numReviews: true,
-            created_at: true,
+            createdAt: true,
         },
     });
     return convertToPlainObject(data);
@@ -50,7 +50,7 @@ export async function getProductBySlug(slug: string) {
             price: true,
             rating: true,
             numReviews: true,
-            created_at: true,
+            createdAt: true,
         },
     });
 }
