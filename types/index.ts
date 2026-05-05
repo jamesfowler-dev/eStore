@@ -12,7 +12,7 @@ export type Product = z.infer<typeof insertProductSchema> & {
     id: string;
     rating: string;
     numReviews: number;
-    created_at: Date;
+    createdAt: Date;
     slug: string;
     images: string[];
     name: string;
@@ -27,7 +27,7 @@ export type ShippingAddress = z.infer<typeof shippingAddressSchema>;
 export type OrderItem = z.infer<typeof insertOrderItemSchema>;
 export type Order = z.infer<typeof insertOrderSchema> & {
     id: string;
-    created_at: Date;
+    createdAt: Date;
     isPaid: Boolean;
     paidAt: Date | null;
     isDelivered: Boolean;
