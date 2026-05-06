@@ -8,7 +8,9 @@
         "build": "next build",
         "start": "next start",
         "lint": "eslint",
-        "postinstall": "prisma generate"
+        "postinstall": "prisma generate",
+        "test": "jest",
+        "test:watch": "jest --watch"
     },
     "dependencies": {
         "@auth/core": "^0.41.1",
@@ -24,7 +26,6 @@
         "bcrypt-ts-edge": "^3.0.1",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
-        "dotenv": "^17.4.0",
         "lucide-react": "^1.7.0",
         "next": "16.2.1",
         "next-auth": "^5.0.0-beta.30",
@@ -43,15 +44,20 @@
     },
     "devDependencies": {
         "@prisma/client": "^7.6.0",
+        "@types/jest": "^30.0.0",
         "@types/node": "^20.19.39",
         "@types/react": "^19",
         "@types/react-dom": "^19",
         "@types/ws": "^8.18.1",
         "bufferutil": "^4.1.0",
+        "dotenv": "^17.4.2",
         "eslint": "^9",
         "eslint-config-next": "16.2.1",
+        "jest": "^30.3.0",
         "prettier": "^3.8.3",
         "prisma": "^7.6.0",
+        "ts-jest": "^29.4.9",
+        "ts-node": "^10.9.2",
         "typescript": "^5"
     }
 }
