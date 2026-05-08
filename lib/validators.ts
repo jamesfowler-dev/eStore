@@ -1,4 +1,5 @@
-// This file defines the app’s Zod validation schemas, and those schemas are used for both runtime validation and TypeScript types
+// This file defines the app’s Zod validation schemas, and those schemas are used for both runtime validation 
+// and TypeScript types
 import { z } from "zod";
 import { formatNumberWithDecimal } from "./utils";
 import { PAYMENT_METHODS } from "./constants";
@@ -112,3 +113,11 @@ export const insertOrderItemSchema = z.object({
     price: currency,
     qty: z.number(),
 })
+
+
+export const paymentResultSchema = z.object({
+    id: z.string(),
+    status: z.string(),
+    email_address: z.string(),
+    pricePaid: z.string(),
+});
