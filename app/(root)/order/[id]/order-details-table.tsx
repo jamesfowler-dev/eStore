@@ -7,10 +7,22 @@ import { formatCurrency, formatDateTime, formatId } from "@/lib/utils";
 import { Order } from "@/types";
 import Link from "next/link";
 import Image from "next/image";
+import {
+    PayPalButtons,
+    PayPalScriptProvider,
+    usePayPalScriptReducer
+} from '@paypal/react-paypal-js';
+import {
+    createPayPalOrder,
+    approvePayPalOrder
+} from '@/lib/actions/order-actions';
+import { create } from "domain";
+import { toast } from 'sonner';
+import type { OnApproveData, OnApproveActions } from "@paypal/paypal-js";
 
 
 
-const OrderDetailsTable = ({ order }: { order: Order }) => {
+const OrderDetailsTable = ({ order, paypalClientId }: { order: Order, paypalClientId: string }) => {
 
     const {
         shippingAddress,
@@ -25,6 +37,52 @@ const OrderDetailsTable = ({ order }: { order: Order }) => {
         paidAt,
         deliveredAt
     } = order
+
+    const PrintLoadingState = () => {
+        const [{ isPending, isRejected }] = usePayPalScriptReducer();
+        let status = '';
+
+        if (isPending) {
+            status = 'Loading PayPal...'
+        } else if (isRejected) {
+            status = 'Error loading PayPal'
+        }
+        return status;
+    }
+
+    const handleCreatePayPalOrder = async () => {
+        const res = await createPayPalOrder(order.id);
+
+        if (!res.success) {
+            toast.error(res.message)
+        } else {
+            toast.success(res.message, {
+                className: "text-white border-green-600 shadow-lg",
+                style: {
+                    backgroundColor: '#ffffff',
+                    zIndex: 9999,
+                }
+            })
+        }
+        return res.data;
+    }
+
+    const handleApprovePayPalOrder = async (data: OnApproveData, actions: OnApproveActions) => {
+        const orderId = data.orderID;
+        const res = await approvePayPalOrder(order.id, { orderId: data.orderID });
+
+        if (res.success) {
+            toast.success(res.message, {
+                className: "text-white border-green-600 shadow-lg",
+                style: {
+                    backgroundColor: '#ffffff',
+                    zIndex: 9999,
+                }
+            })
+        } else {
+            toast.error(res.message)
+        }
+    }
 
     return (
         <>
@@ -126,10 +184,23 @@ const OrderDetailsTable = ({ order }: { order: Order }) => {
                                 <div>Total</div>
                                 <div>{formatCurrency(totalPrice)}</div>
                             </div>
+                            {/* Paypal Payment */}
+                            {!isPaid && paymentMethod === 'PayPal' && (
+                                <div>
+                                    {/* clientId is your PayPal API key used to identify your PayPal app and enable payments */}
+                                    <PayPalScriptProvider options={{ clientId: paypalClientId, currency: "GBP" }}>
+                                        <PrintLoadingState />
+                                        <PayPalButtons
+                                            createOrder={handleCreatePayPalOrder}
+                                            onApprove={handleApprovePayPalOrder}
+                                        />
+                                    </PayPalScriptProvider>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
-            </div>
+            </div >
         </>
     );
 }

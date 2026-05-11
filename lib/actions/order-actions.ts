@@ -7,7 +7,7 @@ import { auth } from "@/auth";
 import { getUserById } from "./user.actions";
 import { insertOrderItemSchema, insertOrderSchema } from "../validators";
 import { prisma } from "@/db/prisma";
-import { CartItem, PaymenResult } from "@/types";
+import { CartItem, PaymentResult } from "@/types";
 import { paypal } from "../paypal";
 import { revalidatePath } from "next/cache";
 
@@ -225,9 +225,10 @@ export async function approvePayPalOrder(
             success: true,
             message: 'Your order has been paid',
         }
-    }
+
     } catch (error) {
-    return { success: false, message: formatError(error) }
+        return { success: false, message: formatError(error) }
+    }
 }
 
 
@@ -255,11 +256,11 @@ async function updateOrderToPaid({
     // Transaction to update order and account for product stock amount
     await prisma.$transaction(async (tx) => {
         // Iterate over products and update the stock
-        const stockUpdate = () => {
-            order.orderitems.map((item) => await tx.product.update({
+        for (const item of order.orderitems) {
+            await tx.product.update({
                 where: { id: item.productId },
-                data: { stock: { increment: -item.qty } }
-            }));
+                data: { stock: { increment: -item.qty } },
+            });
         }
 
         // Set the order to paid

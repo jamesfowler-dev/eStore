@@ -28,6 +28,8 @@ const OrderDetailsPage = async (props: {
                 ...order,
                 shippingAddress: order.shippingAddress as ShippingAddress,
             }}
+            // 'sb' is an identifier for sandbox accounts
+            paypalClientId={process.env.PAYPAL_CLIENT_ID || 'sb'}
         />
     );
 };
